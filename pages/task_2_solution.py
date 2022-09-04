@@ -1,0 +1,14 @@
+import streamlit as st
+from solutions.task_2 import Task2solver
+import pandas as pd
+from sklearn.metrics import f1_score
+
+
+if st.button(label='RUN'):
+    df = pd.read_csv('processed_data/val.csv')
+    x_test = df.drop('tgt', axis=1)
+    y_test = df['tgt']
+    a = Task2solver()
+    model = a.train_cb('processed_data/train.csv')
+    st.write(f'f1-score: {f1_score(y_test, model.predict(x_test)):.4f}')
+    
