@@ -1,9 +1,10 @@
-import pandas as pd
-from sklearn.model_selection import train_test_split
-import solutions.config as config
 from pathlib import Path
+
+import pandas as pd
 from catboost import CatBoostClassifier, Pool
-from sklearn.metrics import f1_score
+from sklearn.model_selection import train_test_split
+
+import solutions.config as config
 
 
 class Task2solver:

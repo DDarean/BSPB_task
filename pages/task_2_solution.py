@@ -1,8 +1,8 @@
-import streamlit as st
-from solutions.task_2 import Task2solver
 import pandas as pd
+import streamlit as st
 from sklearn.metrics import f1_score
 
+from solutions.task_2 import Task2solver
 
 if st.button(label='RUN'):
     df = pd.read_csv('processed_data/val.csv')

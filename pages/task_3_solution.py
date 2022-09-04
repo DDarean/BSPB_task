@@ -1,4 +1,5 @@
 import streamlit as st
+
 from solutions.task_3 import cashback_summary, process_csv
 
 month = st.number_input(label='Payment start month', min_value=2, max_value=12,
