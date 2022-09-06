@@ -1,11 +1,13 @@
-from pathlib import Path
-
 import pandas as pd
 from catboost import CatBoostClassifier, Pool
 from sklearn.model_selection import train_test_split
 
 import solutions.config as config
 from typing import Tuple
+
+from sklearn.metrics import f1_score, precision_score, recall_score
+import numpy as np
+
 
 class Task2solver:
     """
@@ -15,26 +17,15 @@ class Task2solver:
     def __init__(self):
         self.RANDOM_STATE = config.RANDOM_STATE
         self.params = config.CATBOOST_PARAMS
+        self.param_grid = config.CB_PARAM_GRID
         self.model = CatBoostClassifier(**self.params)
-
-    @staticmethod
-    def save_dataframe(
-        df: pd.DataFrame, file_path=".", file_name="file.csv"
-    ) -> None:
-        """
-        Save dataframe
-        :param df: pandas dataframe
-        :param file_path: path for saving
-        :param file_name: new file name
-        :return: None
-        """
-        path = Path(file_path).joinpath(file_name)
-        path.parent.mkdir(parents=True, exist_ok=True)
-        df.to_csv(path, index=False)
+        self.train = None
+        self.test = None
+        self.top_features = None
 
     @staticmethod
     def target_split(
-            df: pd.DataFrame, target_col: str
+        df: pd.DataFrame, target_col: str
     ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Makes feature / target variable split for dataframe
@@ -46,51 +37,68 @@ class Task2solver:
         y = df[[target_col]]
         return x, y
 
-    def prepare_dataset(self, df_path: str) -> None:
+    def prepare_dataset(self, df_path: str, test_size=0.3) -> None:
         """
         Converts .csv file to pandas dataframe with required index and columns
         :param df_path: path to .csv file with training data
+        :param test_size: fraction of dataframe for test
         :return: None
         """
         df = pd.read_csv(df_path)
         df = df.drop("Unnamed: 0", axis=1)
-        train_test, val = train_test_split(
-            df, test_size=0.1, random_state=self.RANDOM_STATE
-        )
-        self.save_dataframe(
-            val, file_path="../processed_data", file_name="val.csv"
-        )
-        train, test = train_test_split(
-            train_test, test_size=0.3, random_state=self.RANDOM_STATE
-        )
-        self.save_dataframe(
-            train, file_path="../processed_data", file_name="train.csv"
-        )
-        self.save_dataframe(
-            test, file_path="../processed_data", file_name="test.csv"
+        self.train, self.test = train_test_split(
+            df, test_size=test_size, random_state=self.RANDOM_STATE
         )
 
-    def train_cb(self, df_path: str) -> None:
+    def train_fresh_cb(self, train_df: pd.DataFrame) -> None:
         """
-        Train CatBoost classifier
-        :param df_path: path to processed .csv with train data
+        Retrain CatBoost classifier
         :return: None
         """
-        df = pd.read_csv(df_path)
-        x = df.drop("tgt", axis=1)
-        y = df["tgt"]
+        self.model = CatBoostClassifier(**self.params)
+        x, y = self.target_split(train_df, "tgt")
         train_data = Pool(data=x, label=y)
         self.model.fit(train_data)
 
-    def random_search_train(self, df_path: str) -> None:
+    def grid_search_train(self) -> None:
         """
-        Train CatBoost classifier with best parameters found by random search
-        :param df_path: path to processed .csv with train data
+        Train CatBoost classifier with grid-search + cross validation
         :return: None
         """
-        df = pd.read_csv(df_path)
-        x, y = self.target_split(df, 'tgt')
+        x, y = self.target_split(self.train, "tgt")
         train_data = Pool(data=x, label=y)
         param_grid = config.CB_PARAM_GRID
-        print(param_grid)
         self.model.grid_search(param_grid, train_data, refit=True, cv=5)
+        self.params = self.model.get_params()
+
+    def validate(self) -> Tuple[str, str, str]:
+        x, y = self.target_split(self.test, "tgt")
+        pred = self.model.predict(x)
+        f1 = f1_score(pred, y)
+        precision = precision_score(pred, y)
+        recall = recall_score(pred, y)
+        return f1, precision, recall
+
+    def filter_top_features(self, top_n=5) -> None:
+        if not self.top_features:
+            self.top_features = self.model.get_feature_importance(
+                prettified=True
+            )["Feature Id"][0:top_n].values
+        self.train = self.train[np.append(self.top_features, "tgt")]
+        self.test = self.test[np.append(self.top_features, "tgt")]
+
+    def update_model(self) -> None:
+        self.model = CatBoostClassifier(**self.params)
+        self.grid_search_train()
+
+    def retrain_and_predict(
+        self, train_path: str, pred_path: str
+    ) -> pd.DataFrame:
+        train = pd.read_csv(train_path)
+        train = train[np.append(self.top_features, "tgt")]
+        self.train_fresh_cb(train)
+        for_pred = pd.read_csv(pred_path)
+        predictions = self.model.predict(for_pred[self.top_features])
+        return pd.DataFrame(
+            {"id": for_pred.iloc[:, 0].values, "prediction": predictions}
+        )
