@@ -1,12 +1,12 @@
+from typing import Tuple
+
+import numpy as np
 import pandas as pd
 from catboost import CatBoostClassifier, Pool
+from sklearn.metrics import f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
 import solutions.config as config
-from typing import Tuple
-
-from sklearn.metrics import f1_score, precision_score, recall_score
-import numpy as np
 
 
 class Task2solver:
