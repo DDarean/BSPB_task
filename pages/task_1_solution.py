@@ -41,7 +41,7 @@ st.write('Модель обучается на данных с 2018 по 2020 г
          'Остальные предсказания доступны для сохранения в .csv формате')
 
 path_to_df = st.text_input(label='Path to data file',
-                           value='../data/task1_train.csv')
+                           value='data/task1_train.csv')
 
 if path_to_df:
     st.write('Начать обучение модели')

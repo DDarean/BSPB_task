@@ -13,7 +13,7 @@ path_to_train = st.text_input(label='Path to train data file',
                            value='../data/task2_train.csv')
 
 path_to_submit = st.text_input(label='Path to data file for predictions',
-                           value='../data/task2_submit.csv')
+                           value='data/task2_submit.csv')
 
 if path_to_train:
     st.write('Начать обучение модели')
