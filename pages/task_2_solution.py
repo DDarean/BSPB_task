@@ -15,7 +15,7 @@ st.write(
 )
 
 path_to_train = st.text_input(
-    label="Path to train data file", value="/data/task2_train.csv"
+    label="Path to train data file", value="data/task2_train.csv"
 )
 
 path_to_submit = st.text_input(
@@ -55,6 +55,6 @@ if path_to_train:
         st.download_button(
             label="Download predictions as CSV",
             data=preds.to_csv(index=False).encode("utf-8"),
-            file_name="submit1.csv",
+            file_name="task2_submit.csv",
             mime="text/csv",
         )
