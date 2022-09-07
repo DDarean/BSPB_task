@@ -72,6 +72,10 @@ class Task2solver:
         self.params = self.model.get_params()
 
     def validate(self) -> Tuple[str, str, str]:
+        """
+        Calculate main metrics
+        :return: f1-score, precision, recall
+        """
         x, y = self.target_split(self.test, "tgt")
         pred = self.model.predict(x)
         f1 = f1_score(pred, y)
@@ -80,6 +84,11 @@ class Task2solver:
         return f1, precision, recall
 
     def filter_top_features(self, top_n=5) -> None:
+        """
+        Filter only top-n feature columns using feature importance
+        :param top_n: quantity of features
+        :return: None
+        """
         if not self.top_features:
             self.top_features = self.model.get_feature_importance(
                 prettified=True
@@ -88,12 +97,23 @@ class Task2solver:
         self.test = self.test[np.append(self.top_features, "tgt")]
 
     def update_model(self) -> None:
+        """
+        Retrain CatBoost classifier using grid search
+        :return: None
+        """
         self.model = CatBoostClassifier(**self.params)
         self.grid_search_train()
 
     def retrain_and_predict(
         self, train_path: str, pred_path: str
     ) -> pd.DataFrame:
+        """
+        Retrain classifier on best parameters and full train dataset and
+        return predictions for test dataset
+        :param train_path: path to train dataset
+        :param pred_path: path to test dataset
+        :return: dataframe with predictions for each row
+        """
         train = pd.read_csv(train_path)
         train = train[np.append(self.top_features, "tgt")]
         self.train_fresh_cb(train)
