@@ -1,6 +1,16 @@
 import streamlit as st
 from solutions.task_3 import Task3solver
 
+
+st.markdown("### Задание 3")
+st.write(
+    "Этапы расчёта:  \n"
+    "1. Создание таблицы с суммарными ежемесячными выплатами клиентов  \n"
+    "2. Помесячная (начиная с указанного месяца) проверка на соответствие"
+    " условиям кэшбэка  \n"
+    "3. Создание таблицы с количеством и размерам выплат за каждый месяц"
+)
+
 month = st.number_input(
     label="Payment start month", min_value=2, max_value=12, step=1, value=3
 )
@@ -12,6 +22,7 @@ min_payment = st.number_input(
 cb_size = st.number_input(
     label="Cashback sum", value=1000, min_value=0, step=100
 )
+
 
 path_to_file = st.text_input(label="Path to data file", value="data/task3.csv")
 
