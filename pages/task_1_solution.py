@@ -19,8 +19,8 @@ def create_go_scatter(df: pd.DataFrame, column: str) -> go.Scatter:
 
 def draw_chart(train: pd.DataFrame, pred: pd.DataFrame) -> None:
     x = []
-    values = create_go_scatter(train, 'value')
-    predictions = create_go_scatter(pred, 'prediction')
+    values = create_go_scatter(train, "value")
+    predictions = create_go_scatter(pred, "prediction")
     x.append(values)
     x.append(predictions)
 
@@ -34,38 +34,41 @@ def draw_chart(train: pd.DataFrame, pred: pd.DataFrame) -> None:
     st.plotly_chart(fig)
 
 
-st.markdown('### Задание 1')
-st.write('Модель обучается на данных с 2018 по 2020 год  \n'
-         'Предсказания: с 2021 по 2024 год  \n'
-         'По значениям 2021 вычисляются метрики качества  \n'
-         'Остальные предсказания доступны для сохранения в .csv формате')
+st.markdown("### Задание 1")
+st.write(
+    "Модель обучается на данных с 2018 по 2020 год  \n"
+    "Предсказания: с 2021 по 2024 год  \n"
+    "По значениям 2021 вычисляются метрики качества  \n"
+    "Остальные предсказания доступны для сохранения в .csv формате"
+)
 
-path_to_df = st.text_input(label='Path to data file',
-                           value='data/task1_train.csv')
+path_to_df = st.text_input(
+    label="Path to data file", value="data/task1_train.csv"
+)
 
 if path_to_df:
-    st.write('Начать обучение модели')
-    if st.button(label='Run'):
+    st.write("Начать обучение модели")
+    if st.button(label="Run"):
         solver = Task1solver()
-        with st.spinner('Processing csv file'):
+        with st.spinner("Processing csv file"):
             solver.process_df(path_to_df)
-        with st.spinner('Generating features'):
+        with st.spinner("Generating features"):
             solver.generate_dataset()
-        with st.spinner('Training model'):
+        with st.spinner("Training model"):
             solver.train_model()
-        with st.spinner('Making predictions'):
+        with st.spinner("Making predictions"):
             predictions = solver.predict()
 
         csv = predictions[predictions.index.year > 2021]
-        csv = csv.reset_index()[['date', 'prediction']]
+        csv = csv.reset_index()[["date", "prediction"]]
 
-        st.write('Скачать предсказания')
+        st.write("Скачать предсказания")
 
         st.download_button(
             label="Download predictions as CSV",
-            data=csv.to_csv(index=False).encode('utf-8'),
-            file_name='submit1.csv',
-            mime='text/csv'
+            data=csv.to_csv(index=False).encode("utf-8"),
+            file_name="submit1.csv",
+            mime="text/csv",
         )
 
         draw_chart(solver.data, predictions)

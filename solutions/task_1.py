@@ -102,7 +102,7 @@ class Task1solver:
         """
         for_train = self.featured_data[
             self.featured_data.index.year <= self.year
-        ][self.n_lags:].drop("value", axis=1)
+        ][self.n_lags :].drop("value", axis=1)  # noqa: E203
         target_col = "scaled"
         x_train, y_train = self.target_split(for_train, target_col)
         self.model.fit(x_train.values, y_train.values.ravel())
